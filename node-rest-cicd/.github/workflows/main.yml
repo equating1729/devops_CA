@@ -1,10 +1,12 @@
-name: Node.js CI/CD Pipeline
+name: NodeJS application CI/CD pipeline
+
 on:
   push:
     branches:
       - main
+
 jobs:
-  build-test-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,19 +24,13 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build Docker image
-        run: docker build -t node-rest-cicd .
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          username: root
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /root/node-rest-cicd || git clone https://github.com/your-username/node-rest-cicd.git /root/node-rest-cicd
-            cd /root/node-rest-cicd
+            cd /root/Nodejs-application-CICD-pipeline
             git pull origin main
-            docker stop node-api-container || true
-            docker build -t node-rest-cicd .
-            docker run -d -p 3000:3000 --name node-api-container node-rest-cicd
+            docker compose up -d --build
